@@ -1,0 +1,5 @@
+{
+    "message": "Hello from Docker Server!",
+    "testValue": "This is a test string from the server.",
+    "timestamp": "2024-01-01T00:00:00Z"
+}
