@@ -9,4 +9,33 @@ services:
       - ./json_data:/app/json_data
     environment:
       - FLASK_ENV=development
+      - DB_HOST=mysql
+      - DB_USER=game_user
+      - DB_PASSWORD=game_password
+      - DB_NAME=game_db
+    depends_on:
+      mysql:
+        condition: service_healthy
     restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=game_db
+      - MYSQL_USER=game_user
+      - MYSQL_PASSWORD=game_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  mysql_data:

@@ -1,0 +1,12 @@
+{
+    "python.analysis.extraPaths": [
+        "./server"
+    ],
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingImports": "none",
+        "reportMissingModuleSource": "none"
+    },
+    "pylint.args": [
+        "--disable=C0114,C0411,E0401"
+    ]
+}
