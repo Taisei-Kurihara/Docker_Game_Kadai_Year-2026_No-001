@@ -63,6 +63,10 @@ namespace DebugAndTest
         private Dictionary<int, float> _cachedWeights;
         private List<GachaCharacterData> _cachedCharacters;
 
+        // ガチャ結果のレアリティ集計用.
+        private Dictionary<int, int> _pulledRarityCounts = new Dictionary<int, int>();
+        private int _totalPullCount = 0;
+
         private void Update()
         {
             if (Keyboard.current == null) return;
@@ -83,6 +87,12 @@ namespace DebugAndTest
             if (Keyboard.current.vKey.wasPressedThisFrame)
             {
                 StartCoroutine(LogCharacterProbabilitiesFromServer());
+            }
+
+            // Bキー: ガチャ結果のレアリティ集計から重みづけ計算結果を表示.
+            if (Keyboard.current.bKey.wasPressedThisFrame)
+            {
+                LogPulledRarityWeights();
             }
         }
 
@@ -125,6 +135,14 @@ namespace DebugAndTest
                 {
                     var character = response.results[i];
                     sb.AppendLine($"  {i + 1}回目: {character.name} (レアリティ{character.rarity})");
+
+                    // レアリティ集計に追加.
+                    if (!_pulledRarityCounts.ContainsKey(character.rarity))
+                    {
+                        _pulledRarityCounts[character.rarity] = 0;
+                    }
+                    _pulledRarityCounts[character.rarity]++;
+                    _totalPullCount++;
                 }
 
                 SetDisplayText(sb.ToString());
@@ -294,6 +312,60 @@ namespace DebugAndTest
                 _displayText.text = text;
             }
             Debug.Log(text);
+        }
+
+        /// <summary>
+        /// ガチャ結果のレアリティ集計から重みづけ計算結果を表示する.
+        /// </summary>
+        private void LogPulledRarityWeights()
+        {
+            if (_totalPullCount == 0)
+            {
+                SetDisplayText("[Gacha] まだガチャを引いていません (Xキーでガチャを引いてください)");
+                return;
+            }
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"[Gacha] ガチャ結果からの重みづけ計算 (総回数: {_totalPullCount}回):");
+            sb.AppendLine();
+
+            // 実測値から計算した確率.
+            sb.AppendLine("【実測確率】");
+            foreach (var kvp in _pulledRarityCounts.OrderBy(x => x.Key))
+            {
+                float actualProbability = (float)kvp.Value / _totalPullCount * 100f;
+                sb.AppendLine($"  レアリティ{kvp.Key}: {kvp.Value}回 / {_totalPullCount}回 = {actualProbability:F2}%");
+            }
+
+            // サーバー設定値との比較.
+            if (_cachedWeights != null && _cachedWeights.Count > 0)
+            {
+                sb.AppendLine();
+                sb.AppendLine("【サーバー設定確率との比較】");
+                float totalWeight = _cachedWeights.Values.Sum();
+
+                foreach (var kvp in _pulledRarityCounts.OrderBy(x => x.Key))
+                {
+                    float actualProbability = (float)kvp.Value / _totalPullCount * 100f;
+                    float expectedProbability = 0f;
+
+                    if (_cachedWeights.TryGetValue(kvp.Key, out float weight))
+                    {
+                        expectedProbability = (weight / totalWeight) * 100f;
+                    }
+
+                    float diff = actualProbability - expectedProbability;
+                    string diffSign = diff >= 0 ? "+" : "";
+                    sb.AppendLine($"  レアリティ{kvp.Key}: 実測{actualProbability:F2}% / 設定{expectedProbability:F2}% (差{diffSign}{diff:F2}%)");
+                }
+            }
+            else
+            {
+                sb.AppendLine();
+                sb.AppendLine("※サーバー設定確率と比較するには先にCキーで確率を取得してください");
+            }
+
+            SetDisplayText(sb.ToString());
         }
     }
 

@@ -40,7 +40,7 @@ def get_db_connection():
 
 
 def init_db():
-    """データベース初期化（テーブルはinit.sqlで作成済み）."""
+    """データベース初期化（テーブルはinitialize.sqlで作成済み）."""
     try:
         init_pool()
         print("Database connection pool initialized.")

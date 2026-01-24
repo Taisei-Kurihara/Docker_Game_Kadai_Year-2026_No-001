@@ -601,7 +601,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_text: "(x \u30AC\u30C1\u30E3\u3092\u5F15\u304F) (c \u30EC\u30A2\u30EA\u30C6\u30A3\u4E8B\u306E\u78BA\u7387)
-    (v \u78BA\u7387\u8868\u793A)"
+    (v \u78BA\u7387\u8868\u793A) (B \u30AC\u30C1\u30E3\u7D50\u679C\u3092\u3082\u3068\u3068\u3057\u305F\u78BA\u7387)"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6198922aace6f9b4f9d2969615a37964, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 6198922aace6f9b4f9d2969615a37964, type: 2}
@@ -628,8 +628,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 60
-  m_fontSizeBase: 60
+  m_fontSize: 50
+  m_fontSizeBase: 50
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
