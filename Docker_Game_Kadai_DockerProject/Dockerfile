@@ -7,6 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY server/ ./server/
 COPY json_data/ ./json_data/
+COPY images/ ./images/
 
 EXPOSE 5000
 

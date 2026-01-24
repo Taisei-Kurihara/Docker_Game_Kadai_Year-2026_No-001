@@ -7,6 +7,7 @@ services:
       - "5000:5000"
     volumes:
       - ./json_data:/app/json_data
+      - ./images:/app/images
     environment:
       - FLASK_ENV=development
       - DB_HOST=mysql

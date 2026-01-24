@@ -7,7 +7,7 @@ USE game_db;
 -- キャラクタマスターデータテーブル.
 CREATE TABLE IF NOT EXISTS character_master (
     masternumber INT AUTO_INCREMENT PRIMARY KEY,
-    rarity INT NOT NULL CHECK(rarity >= 1 AND rarity <= 6),
+    rarity INT NOT NULL CHECK(rarity >= 0 AND rarity <= 5),
     name VARCHAR(255) NOT NULL,
     type INT NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -62,8 +62,12 @@ CREATE TABLE IF NOT EXISTS gacha_rate_config (
     FOREIGN KEY (gacha_id) REFERENCES gacha_type(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- テスト用キャラクターデータ (レアリティ1-6、各10体、全て恒常).
+-- テスト用キャラクターデータ (レアリティ0-5、各10体、全て恒常).
 INSERT INTO character_master (rarity, name, type) VALUES
+(0, 'レアリティ0 : 001番', 0), (0, 'レアリティ0 : 002番', 0), (0, 'レアリティ0 : 003番', 0),
+(0, 'レアリティ0 : 004番', 0), (0, 'レアリティ0 : 005番', 0), (0, 'レアリティ0 : 006番', 0),
+(0, 'レアリティ0 : 007番', 0), (0, 'レアリティ0 : 008番', 0), (0, 'レアリティ0 : 009番', 0),
+(0, 'レアリティ0 : 010番', 0),
 (1, 'レアリティ1 : 001番', 0), (1, 'レアリティ1 : 002番', 0), (1, 'レアリティ1 : 003番', 0),
 (1, 'レアリティ1 : 004番', 0), (1, 'レアリティ1 : 005番', 0), (1, 'レアリティ1 : 006番', 0),
 (1, 'レアリティ1 : 007番', 0), (1, 'レアリティ1 : 008番', 0), (1, 'レアリティ1 : 009番', 0),
@@ -83,8 +87,4 @@ INSERT INTO character_master (rarity, name, type) VALUES
 (5, 'レアリティ5 : 001番', 0), (5, 'レアリティ5 : 002番', 0), (5, 'レアリティ5 : 003番', 0),
 (5, 'レアリティ5 : 004番', 0), (5, 'レアリティ5 : 005番', 0), (5, 'レアリティ5 : 006番', 0),
 (5, 'レアリティ5 : 007番', 0), (5, 'レアリティ5 : 008番', 0), (5, 'レアリティ5 : 009番', 0),
-(5, 'レアリティ5 : 010番', 0),
-(6, 'レアリティ6 : 001番', 0), (6, 'レアリティ6 : 002番', 0), (6, 'レアリティ6 : 003番', 0),
-(6, 'レアリティ6 : 004番', 0), (6, 'レアリティ6 : 005番', 0), (6, 'レアリティ6 : 006番', 0),
-(6, 'レアリティ6 : 007番', 0), (6, 'レアリティ6 : 008番', 0), (6, 'レアリティ6 : 009番', 0),
-(6, 'レアリティ6 : 010番', 0);
+(5, 'レアリティ5 : 010番', 0);

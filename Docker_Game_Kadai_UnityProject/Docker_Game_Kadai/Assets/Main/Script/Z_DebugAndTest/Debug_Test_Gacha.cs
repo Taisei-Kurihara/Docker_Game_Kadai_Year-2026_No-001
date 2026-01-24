@@ -7,6 +7,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 namespace DebugAndTest
 {
@@ -67,23 +68,35 @@ namespace DebugAndTest
         private Dictionary<int, int> _pulledRarityCounts = new Dictionary<int, int>();
         private int _totalPullCount = 0;
 
+        [SerializeField]
+        List<RawImage> hosi;
+
+        // レアリティ画像のキャッシュ.
+        private Dictionary<int, Texture2D> _rarityImageCache = new Dictionary<int, Texture2D>();
+
+        private void Start()
+        {
+            // 起動時にRawImageをすべて非表示にする.
+            SetRawImagesActive(false);
+        }
+
         private void Update()
         {
             if (Keyboard.current == null) return;
 
-            // Xキー: ガチャを引いて結果をログ.
+            // Xキー: ガチャを引いて結果を表示.
             if (Keyboard.current.xKey.wasPressedThisFrame)
             {
                 StartCoroutine(PullGachaFromServer());
             }
 
-            // Cキー: レアリティごとの確率をログ.
+            // Cキー: レアリティごとの確率を表示.
             if (Keyboard.current.cKey.wasPressedThisFrame)
             {
                 StartCoroutine(LogRarityProbabilitiesFromServer());
             }
 
-            // Vキー: キャラごとの確率をログ.
+            // Vキー: キャラごとの確率を表示.
             if (Keyboard.current.vKey.wasPressedThisFrame)
             {
                 StartCoroutine(LogCharacterProbabilitiesFromServer());
@@ -97,11 +110,12 @@ namespace DebugAndTest
         }
 
         /// <summary>
-        /// サーバーからガチャを10回引く
+        /// サーバーからガチャを10回引く.
         /// </summary>
         private IEnumerator PullGachaFromServer()
         {
             SetDisplayText("[Gacha] サーバーに通信中...");
+            SetRawImagesActive(false);
 
             string json = "{\"count\": 10}";
             using (UnityWebRequest request = new UnityWebRequest($"{SERVER_URL}/api/gacha/pull", "POST"))
@@ -146,6 +160,87 @@ namespace DebugAndTest
                 }
 
                 SetDisplayText(sb.ToString());
+
+                // ガチャ結果の画像を表示.
+                yield return StartCoroutine(DisplayGachaResultImages(response.results));
+            }
+        }
+
+        /// <summary>
+        /// ガチャ結果のレアリティ画像を表示する.
+        /// </summary>
+        private IEnumerator DisplayGachaResultImages(List<GachaCharacterData> results)
+        {
+            if (hosi == null || hosi.Count == 0)
+            {
+                yield break;
+            }
+
+            int displayCount = Mathf.Min(results.Count, hosi.Count);
+
+            for (int i = 0; i < displayCount; i++)
+            {
+                int rarity = results[i].rarity;
+
+                // キャッシュにあればそれを使用.
+                if (_rarityImageCache.TryGetValue(rarity, out Texture2D cachedTexture))
+                {
+                    hosi[i].texture = cachedTexture;
+                    hosi[i].gameObject.SetActive(true);
+                }
+                else
+                {
+                    // サーバーから画像を取得.
+                    yield return StartCoroutine(LoadRarityImage(rarity, hosi[i]));
+                }
+            }
+
+            // 余ったRawImageは非表示.
+            for (int i = displayCount; i < hosi.Count; i++)
+            {
+                hosi[i].gameObject.SetActive(false);
+            }
+        }
+
+        /// <summary>
+        /// サーバーからレアリティ画像を取得する.
+        /// </summary>
+        private IEnumerator LoadRarityImage(int rarity, RawImage targetImage)
+        {
+            string imageUrl = $"{SERVER_URL}/api/images/rarity/{rarity}";
+
+            using (UnityWebRequest request = UnityWebRequestTexture.GetTexture(imageUrl))
+            {
+                yield return request.SendWebRequest();
+
+                if (request.result == UnityWebRequest.Result.Success)
+                {
+                    Texture2D texture = DownloadHandlerTexture.GetContent(request);
+                    _rarityImageCache[rarity] = texture;
+                    targetImage.texture = texture;
+                    targetImage.gameObject.SetActive(true);
+                }
+                else
+                {
+                    Debug.LogWarning($"[Gacha] レアリティ{rarity}の画像取得失敗: {request.error}");
+                    targetImage.gameObject.SetActive(false);
+                }
+            }
+        }
+
+        /// <summary>
+        /// RawImageの表示/非表示を切り替える.
+        /// </summary>
+        private void SetRawImagesActive(bool active)
+        {
+            if (hosi == null) return;
+
+            foreach (var image in hosi)
+            {
+                if (image != null)
+                {
+                    image.gameObject.SetActive(active);
+                }
             }
         }
 
